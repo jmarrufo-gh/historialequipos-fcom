@@ -21,9 +21,9 @@
         li strong { color: #004d99; }
         .error { color: red; font-weight: bold; }
         
-        /* Estilos de Impresión */
+        /* Estilos de Impresión: Oculta la sección de ingreso al imprimir */
         @media print {
-            .input-section { display: none; } /* Oculta la sección de ingreso al imprimir */
+            .input-section { display: none; } 
             body { background-color: white !important; padding: 0; margin: 0; }
             #ticket-output { box-shadow: none; border: none; padding: 0; }
             .ticket-header, .descripcion, ul { border-color: #000 !important; }
@@ -34,69 +34,18 @@
 <body>
 
     <div class="input-section">
-        <h1>Paso 2: Ingrese el JSON del Ticket para Vista Limpia</h1>
-        <p><strong>Paso 1:</strong> Inicie sesión en ProManager y navegue al ticket.</p>
-        <p><strong>Paso 2:</strong> Use la Consola del Desarrollador (F12) para obtener el JSON de la API del ticket (busque la solicitud que devuelve los datos).</p>
+        <h1>Visor de Tickets ProManager 📄</h1>
+        <p>Esta herramienta es **segura y compartible** (alojada en GitHub). Siga los pasos para obtener el JSON y verlo limpio.</p>
+        
         <label for="jsonInput">Pegue aquí el contenido JSON completo del ticket:</label>
         <textarea id="jsonInput" placeholder='{"ticket_id": "...", "titulo": "...", "comentarios": [...]}'></textarea>
         <button onclick="renderTicket()">Generar Vista Limpia</button>
     </div>
 
     <div id="ticket-output">
-        <p>Los detalles limpios del ticket aparecerán aquí después de ingresar el JSON.</p>
+        <p>Los detalles limpios del ticket aparecerán aquí después de ingresar el JSON. Estará listo para imprimir con **Ctrl + P**.</p>
     </div>
 
-    <script>
-        function renderTicket() {
-            const jsonInput = document.getElementById('jsonInput').value;
-            const outputContainer = document.getElementById('ticket-output');
-            
-            outputContainer.innerHTML = ''; // Limpiar salida anterior
-
-            if (!jsonInput) {
-                outputContainer.innerHTML = '<p class="error">Por favor, pegue el JSON de los datos del ticket.</p>';
-                return;
-            }
-
-            try {
-                const jsonData = JSON.parse(jsonInput);
-                
-                // --- Extracción de Propiedades Clave (Ajustar según la estructura JSON de ProManager) ---
-                const ticketId = jsonData.ticket_id || 'N/A';
-                const titulo = jsonData.titulo || 'Sin Título';
-                const estado = jsonData.estado_nombre || 'N/A';
-                const descripcion = jsonData.descripcion || 'Sin descripción.';
-                const comentarios = jsonData.comentarios || [];
-                
-                // Generar HTML de Comentarios
-                let comentariosHtml = comentarios.map(c => 
-                    `<li><strong>${new Date(c.fecha).toLocaleString()}:</strong> ${c.usuario} - ${c.texto}</li>`
-                ).join('');
-
-                // Inyectar el HTML limpio
-                outputContainer.innerHTML = `
-                    <div class="ticket-header">
-                        <h1>Ticket N° ${ticketId}</h1>
-                        <p><strong>Título:</strong> ${titulo}</p>
-                        <p><strong>Estado:</strong> ${estado}</p>
-                        <p><strong>Generado:</strong> ${new Date().toLocaleString()}</p>
-                    </div>
-                    
-                    <h2>Descripción</h2>
-                    <div class="descripcion">${descripcion}</div>
-                    
-                    <h2>Bitácora de Comentarios (${comentarios.length})</h2>
-                    <ul>${comentariosHtml || '<li>No hay comentarios registrados.</li>'}</ul>
-                `;
-                
-                // Opcional: mostrar el botón de impresión después de generar la vista
-                outputContainer.innerHTML += '<button onclick="window.print()">Imprimir Vista Limpia</button>';
-
-            } catch (e) {
-                outputContainer.innerHTML = '<p class="error">Error al parsear el JSON. Asegúrese de que el texto pegado sea un objeto JSON válido.</p>';
-                console.error("Error de parsing:", e);
-            }
-        }
-    </script>
+    <script src="visor.js"></script>
 </body>
 </html>
