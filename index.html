@@ -2,78 +2,101 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Vista Limpia de Ticket ProManager</title>
+    <title>Visor de Tickets ProManager - Vista Limpia</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; color: #333; }
-        .ticket-header { background-color: #f0f4f7; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333; background-color: #f7f7f7; }
+        .input-section { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }
         h1 { color: #004d99; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 0; }
         h2 { color: #555; margin-top: 25px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: monospace; }
+        button { background-color: #008cba; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background-color: #007bb5; }
+
+        /* Estilos para la SALIDA del ticket */
+        #ticket-output { margin-top: 30px; background-color: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
+        .ticket-header { background-color: #e6f7ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
         .descripcion { white-space: pre-wrap; background-color: #fff; border-left: 4px solid #004d99; padding: 10px; margin: 15px 0; }
         ul { list-style: none; padding-left: 0; }
         li { border-bottom: 1px dotted #eee; padding: 8px 0; }
         li strong { color: #004d99; }
-
+        .error { color: red; font-weight: bold; }
+        
+        /* Estilos de Impresión */
         @media print {
+            .input-section { display: none; } /* Oculta la sección de ingreso al imprimir */
+            body { background-color: white !important; padding: 0; margin: 0; }
+            #ticket-output { box-shadow: none; border: none; padding: 0; }
             .ticket-header, .descripcion, ul { border-color: #000 !important; }
-            body { background: white; color: black; }
+            h1, h2, h3, table, pre { page-break-inside: avoid; }
         }
     </style>
 </head>
 <body>
-    <div id="contenedor-ticket">
-        <h1>Cargando Ticket...</h1>
-        <p>Abre la Consola del Desarrollador (F12) y pega el script de extracción.</p>
+
+    <div class="input-section">
+        <h1>Paso 2: Ingrese el JSON del Ticket para Vista Limpia</h1>
+        <p><strong>Paso 1:</strong> Inicie sesión en ProManager y navegue al ticket.</p>
+        <p><strong>Paso 2:</strong> Use la Consola del Desarrollador (F12) para obtener el JSON de la API del ticket (busque la solicitud que devuelve los datos).</p>
+        <label for="jsonInput">Pegue aquí el contenido JSON completo del ticket:</label>
+        <textarea id="jsonInput" placeholder='{"ticket_id": "...", "titulo": "...", "comentarios": [...]}'></textarea>
+        <button onclick="renderTicket()">Generar Vista Limpia</button>
+    </div>
+
+    <div id="ticket-output">
+        <p>Los detalles limpios del ticket aparecerán aquí después de ingresar el JSON.</p>
     </div>
 
     <script>
-        function renderTicket(jsonData) {
-            const container = document.getElementById('contenedor-ticket');
+        function renderTicket() {
+            const jsonInput = document.getElementById('jsonInput').value;
+            const outputContainer = document.getElementById('ticket-output');
             
-            // Asumiendo que el JSON tiene estas propiedades:
-            const ticketId = jsonData.ticket_id || 'N/A';
-            const titulo = jsonData.titulo || 'Sin Título';
-            const estado = jsonData.estado_nombre || 'N/A';
-            const descripcion = jsonData.descripcion || 'Sin descripción.';
-            const comentarios = jsonData.comentarios || [];
+            outputContainer.innerHTML = ''; // Limpiar salida anterior
 
-            let comentariosHtml = comentarios.map(c => 
-                `<li><strong>${new Date(c.fecha).toLocaleDateString()}:</strong> ${c.usuario} - ${c.texto}</li>`
-            ).join('');
+            if (!jsonInput) {
+                outputContainer.innerHTML = '<p class="error">Por favor, pegue el JSON de los datos del ticket.</p>';
+                return;
+            }
 
-            container.innerHTML = `
-                <div class="ticket-header">
-                    <h1>Ticket N° ${ticketId}</h1>
-                    <p><strong>Título:</strong> ${titulo}</p>
-                    <p><strong>Estado:</strong> ${estado}</p>
-                </div>
+            try {
+                const jsonData = JSON.parse(jsonInput);
                 
-                <h2>Descripción</h2>
-                <div class="descripcion">${descripcion}</div>
+                // --- Extracción de Propiedades Clave (Ajustar según la estructura JSON de ProManager) ---
+                const ticketId = jsonData.ticket_id || 'N/A';
+                const titulo = jsonData.titulo || 'Sin Título';
+                const estado = jsonData.estado_nombre || 'N/A';
+                const descripcion = jsonData.descripcion || 'Sin descripción.';
+                const comentarios = jsonData.comentarios || [];
                 
-                <h2>Bitácora de Comentarios (${comentarios.length})</h2>
-                <ul>${comentariosHtml}</ul>
+                // Generar HTML de Comentarios
+                let comentariosHtml = comentarios.map(c => 
+                    `<li><strong>${new Date(c.fecha).toLocaleString()}:</strong> ${c.usuario} - ${c.texto}</li>`
+                ).join('');
+
+                // Inyectar el HTML limpio
+                outputContainer.innerHTML = `
+                    <div class="ticket-header">
+                        <h1>Ticket N° ${ticketId}</h1>
+                        <p><strong>Título:</strong> ${titulo}</p>
+                        <p><strong>Estado:</strong> ${estado}</p>
+                        <p><strong>Generado:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <h2>Descripción</h2>
+                    <div class="descripcion">${descripcion}</div>
+                    
+                    <h2>Bitácora de Comentarios (${comentarios.length})</h2>
+                    <ul>${comentariosHtml || '<li>No hay comentarios registrados.</li>'}</ul>
+                `;
                 
-                <p style="text-align: center; margin-top: 30px;">[Generado: ${new Date().toLocaleString()}]</p>
-            `;
+                // Opcional: mostrar el botón de impresión después de generar la vista
+                outputContainer.innerHTML += '<button onclick="window.print()">Imprimir Vista Limpia</button>';
+
+            } catch (e) {
+                outputContainer.innerHTML = '<p class="error">Error al parsear el JSON. Asegúrese de que el texto pegado sea un objeto JSON válido.</p>';
+                console.error("Error de parsing:", e);
+            }
         }
-
-        // --- ESTE ES EL JSON QUE DEBES PEGAR MANUALMENTE ---
-        // Debes reemplazar el contenido de esta variable 'ticketData' 
-        // con el JSON real que obtienes desde la API de ProManager.
-        const ticketData = {
-            "ticket_id": "14816",
-            "titulo": "Implementación de Nuevo Formato de Reporte SCO",
-            "estado_nombre": "Cerrado",
-            "descripcion": "Se requiere que el reporte X incluya las nuevas métricas Y y Z. La descripción es larga y tiene saltos de línea.",
-            "comentarios": [
-                {"fecha": "2025-01-15", "usuario": "Soporte", "texto": "Requerimiento recibido, se asigna al equipo de desarrollo."},
-                {"fecha": "2025-01-20", "usuario": "Desarrollo", "texto": "Cambios implementados y pasados a QA."},
-                {"fecha": "2025-01-22", "usuario": "jmarrufo", "texto": "Conforme con las pruebas realizadas, cerrar ticket."}
-            ]
-        };
-
-        // Llama a la función para renderizar la vista limpia
-        renderTicket(ticketData);
     </script>
 </body>
 </html>
