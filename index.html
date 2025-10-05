@@ -2,88 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impresión de Ticket 14816 - ProManager</title>
+    <title>Vista Limpia de Ticket ProManager</title>
     <style>
-        /* Estilos base para la vista en pantalla (opcional) */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-            color: #333;
-        }
-        .contenedor {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 30px;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1, h2 {
-            color: #004d99; /* Un azul corporativo */
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
-        }
+        body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; color: #333; }
+        .ticket-header { background-color: #f0f4f7; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        h1 { color: #004d99; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 0; }
+        h2 { color: #555; margin-top: 25px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .descripcion { white-space: pre-wrap; background-color: #fff; border-left: 4px solid #004d99; padding: 10px; margin: 15px 0; }
+        ul { list-style: none; padding-left: 0; }
+        li { border-bottom: 1px dotted #eee; padding: 8px 0; }
+        li strong { color: #004d99; }
 
-        /* ------------------------------------------------ */
-        /* ESTILOS ESPECÍFICOS PARA IMPRESIÓN (@media print) */
-        /* ------------------------------------------------ */
         @media print {
-            /* 1. Resetear el diseño para ahorrar tinta y mejorar la legibilidad */
-            body {
-                background-color: #fff !important;
-                color: #000 !important;
-                margin: 0;
-                padding: 0;
-            }
-            .contenedor {
-                box-shadow: none !important;
-                border: none !important;
-                max-width: 100% !important;
-                padding: 0;
-            }
-
-            /* 2. Asegurar que los enlaces se muestren (para referencia) */
-            a::after {
-                content: " (" attr(href) ")";
-                font-size: 90%;
-            }
-
-            /* 3. Evitar que elementos importantes se corten entre páginas */
-            h1, h2, table, pre {
-                page-break-inside: avoid;
-            }
-
-            /* 4. Ocultar elementos no deseados para la impresión (Ej. botones, iconos) */
-            .no-imprimir, .acciones, button, input[type="button"] {
-                display: none !important;
-            }
-
-            /* 5. Impresión de fondos y colores (si es necesario forzar) */
-            /* -webkit-print-color-adjust: exact;
-            print-color-adjust: exact; */
+            .ticket-header, .descripcion, ul { border-color: #000 !important; }
+            body { background: white; color: black; }
         }
     </style>
 </head>
 <body>
-    <div class="contenedor">
-        <h1>Detalles del Ticket N° 14816</h1>
-        <p><strong>Fecha de Impresión:</strong> <script>document.write(new Date().toLocaleDateString());</script></p>
-        
-        <div id="contenido-del-ticket">
-            <p style="text-align: center; color: red;">
-                *** RECUERDA: PEGAR AQUÍ EL CONTENIDO REAL DEL TICKET DESPUÉS DE INICIAR SESIÓN ***
-            </p>
-            
-            <h2>Ejemplo de Título de Ticket</h2>
-            <p>Descripción del problema o requerimiento.</p>
-            
-            <h3>Comentarios y Bitácora</h3>
-            <ul>
-                <li>[Fecha] - [Usuario]: Primer comentario de la bitácora.</li>
-                <li>[Fecha] - [Usuario]: Segundo comentario y resolución.</li>
-            </ul>
-        </div>
+    <div id="contenedor-ticket">
+        <h1>Cargando Ticket...</h1>
+        <p>Abre la Consola del Desarrollador (F12) y pega el script de extracción.</p>
     </div>
+
+    <script>
+        function renderTicket(jsonData) {
+            const container = document.getElementById('contenedor-ticket');
+            
+            // Asumiendo que el JSON tiene estas propiedades:
+            const ticketId = jsonData.ticket_id || 'N/A';
+            const titulo = jsonData.titulo || 'Sin Título';
+            const estado = jsonData.estado_nombre || 'N/A';
+            const descripcion = jsonData.descripcion || 'Sin descripción.';
+            const comentarios = jsonData.comentarios || [];
+
+            let comentariosHtml = comentarios.map(c => 
+                `<li><strong>${new Date(c.fecha).toLocaleDateString()}:</strong> ${c.usuario} - ${c.texto}</li>`
+            ).join('');
+
+            container.innerHTML = `
+                <div class="ticket-header">
+                    <h1>Ticket N° ${ticketId}</h1>
+                    <p><strong>Título:</strong> ${titulo}</p>
+                    <p><strong>Estado:</strong> ${estado}</p>
+                </div>
+                
+                <h2>Descripción</h2>
+                <div class="descripcion">${descripcion}</div>
+                
+                <h2>Bitácora de Comentarios (${comentarios.length})</h2>
+                <ul>${comentariosHtml}</ul>
+                
+                <p style="text-align: center; margin-top: 30px;">[Generado: ${new Date().toLocaleString()}]</p>
+            `;
+        }
+
+        // --- ESTE ES EL JSON QUE DEBES PEGAR MANUALMENTE ---
+        // Debes reemplazar el contenido de esta variable 'ticketData' 
+        // con el JSON real que obtienes desde la API de ProManager.
+        const ticketData = {
+            "ticket_id": "14816",
+            "titulo": "Implementación de Nuevo Formato de Reporte SCO",
+            "estado_nombre": "Cerrado",
+            "descripcion": "Se requiere que el reporte X incluya las nuevas métricas Y y Z. La descripción es larga y tiene saltos de línea.",
+            "comentarios": [
+                {"fecha": "2025-01-15", "usuario": "Soporte", "texto": "Requerimiento recibido, se asigna al equipo de desarrollo."},
+                {"fecha": "2025-01-20", "usuario": "Desarrollo", "texto": "Cambios implementados y pasados a QA."},
+                {"fecha": "2025-01-22", "usuario": "jmarrufo", "texto": "Conforme con las pruebas realizadas, cerrar ticket."}
+            ]
+        };
+
+        // Llama a la función para renderizar la vista limpia
+        renderTicket(ticketData);
+    </script>
 </body>
 </html>
