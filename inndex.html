@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Historial - Promanager</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Login Form */
+        .login-container {
+            max-width: 500px;
+            margin: 100px auto;
+            background: var(--card);
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.75rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:disabled {
+            background: var(--secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Ticket Viewer */
+        #viewer {
+            display: none;
+        }
+
+        .viewer-header {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .ticket-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .ticket-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-open { background: #dbeafe; color: #1e40af; }
+        .status-progress { background: #fef3c7; color: #92400e; }
+        .status-closed { background: #d1fae5; color: #065f46; }
+
+        /* Problem Section */
+        .section {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .problem-content {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Notes Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.375rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--bg);
+        }
+
+        .note-card {
+            background: var(--bg);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .note-author {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .note-date {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .note-content {
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Hours Table */
+        .hours-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .hours-table th,
+        .hours-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hours-table th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .hours-table tbody tr:hover {
+            background: var(--bg);
+        }
+
+        .hours-total {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .btn-print {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            .btn-print {
+                display: none;
+            }
+            .section {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="login" class="login-container">
+        <div class="login-header">
+            <h1>Visor de Historial de Tickets</h1>
+            <p>Ingrese sus credenciales para acceder</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" placeholder="usuario@promanager.cl" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ticketId">ID del Ticket</label>
+                <input type="text" id="ticketId" placeholder="14816" required>
+            </div>
+
+            <button type="submit" class="btn">Cargar Historial</button>
+        </form>
+
+        <div class="alert alert-info">
+            <strong>Nota:</strong> Las credenciales no se almacenan. Se usan solo para esta sesión.
+        </div>
+
+        <div id="loginError"></div>
+    </div>
+
+    <div id="viewer" class="container">
+        <div class="viewer-header">
+            <div class="ticket-title" id="ticketTitle">Cargando...</div>
+            <div class="ticket-meta" id="ticketMeta"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-icon">📋</span>
+                Descripción del Problema
+            </h2>
+            <div class="problem-content" id="problemContent">
+                Cargando...
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-icon">💬</span>
+                Historial de Notas
+            </h2>
+            <div class="timeline" id="notesTimeline">
+                Cargando...
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-icon">⏱️</span>
+                Registro de Horas
+            </h2>
+            <table class="hours-table" id="hoursTable">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Técnico</th>
+                        <th>Descripción</th>
+                        <th>Horas</th>
+                    </tr>
+                </thead>
+                <tbody id="hoursBody">
+                    <tr><td colspan="4">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const ticketId = document.getElementById('ticketId').value;
+
+            // Mostrar error de CORS
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.innerHTML = `
+                <div class="alert alert-error" style="margin-top: 1rem;">
+                    <strong>⚠️ Limitación Técnica:</strong><br>
+                    Debido a restricciones CORS (Cross-Origin Resource Sharing), no es posible acceder directamente 
+                    a Promanager desde un HTML externo.<br><br>
+                    <strong>Soluciones alternativas:</strong><br>
+                    1. Usar una extensión del navegador (recomendado)<br>
+                    2. Crear un proxy backend en tu servidor<br>
+                    3. Usar la API oficial de Promanager si está disponible
+                </div>
+            `;
+
+            // Simular datos de ejemplo para demostración
+            setTimeout(() => {
+                loadTicketData({
+                    id: ticketId,
+                    title: `Ticket #${ticketId} - Ejemplo de Vista`,
+                    status: 'En Progreso',
+                    priority: 'Alta',
+                    created: '2025-01-15',
+                    assigned: 'Juan Marrufo',
+                    problem: 'Este es un ejemplo de cómo se vería el historial del ticket. En producción, estos datos vendrían de Promanager.',
+                    notes: [
+                        {
+                            author: 'Juan Marrufo',
+                            date: '2025-01-15 10:30',
+                            content: 'Ticket recibido. Iniciando revisión del problema reportado.'
+                        },
+                        {
+                            author: 'María González',
+                            date: '2025-01-15 14:20',
+                            content: 'Se identificó que el problema está relacionado con la configuración del sistema.'
+                        },
+                        {
+                            author: 'Juan Marrufo',
+                            date: '2025-01-16 09:15',
+                            content: 'Aplicada solución temporal. Monitoreando resultados.'
+                        }
+                    ],
+                    hours: [
+                        { date: '2025-01-15', tech: 'Juan Marrufo', desc: 'Análisis inicial', hours: 2.5 },
+                        { date: '2025-01-15', tech: 'María González', desc: 'Diagnóstico del sistema', hours: 3.0 },
+                        { date: '2025-01-16', tech: 'Juan Marrufo', desc: 'Implementación de solución', hours: 4.0 }
+                    ]
+                });
+            }, 1500);
+        });
+
+        function loadTicketData(data) {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('viewer').style.display = 'block';
+
+            // Header
+            document.getElementById('ticketTitle').textContent = data.title;
+            
+            // Meta
+            const statusClass = data.status.toLowerCase().includes('progreso') ? 'status-progress' : 
+                               data.status.toLowerCase().includes('cerrado') ? 'status-closed' : 'status-open';
+            
+            document.getElementById('ticketMeta').innerHTML = `
+                <div class="meta-item">
+                    <span class="meta-label">Estado</span>
+                    <span class="status-badge ${statusClass}">${data.status}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Prioridad</span>
+                    <span class="meta-value">${data.priority}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Fecha Creación</span>
+                    <span class="meta-value">${data.created}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Asignado a</span>
+                    <span class="meta-value">${data.assigned}</span>
+                </div>
+            `;
+
+            // Problem
+            document.getElementById('problemContent').textContent = data.problem;
+
+            // Notes
+            let notesHTML = '';
+            data.notes.forEach(note => {
+                notesHTML += `
+                    <div class="timeline-item">
+                        <div class="note-card">
+                            <div class="note-header">
+                                <span class="note-author">${note.author}</span>
+                                <span class="note-date">${note.date}</span>
+                            </div>
+                            <div class="note-content">${note.content}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('notesTimeline').innerHTML = notesHTML;
+
+            // Hours
+            let totalHours = 0;
+            let hoursHTML = '';
+            data.hours.forEach(hour => {
+                totalHours += hour.hours;
+                hoursHTML += `
+                    <tr>
+                        <td>${hour.date}</td>
+                        <td>${hour.tech}</td>
+                        <td>${hour.desc}</td>
+                        <td>${hour.hours} hrs</td>
+                    </tr>
+                `;
+            });
+            hoursHTML += `
+                <tr class="hours-total">
+                    <td colspan="3" style="text-align: right;">TOTAL:</td>
+                    <td>${totalHours.toFixed(1)} hrs</td>
+                </tr>
+            `;
+            document.getElementById('hoursBody').innerHTML = hoursHTML;
+        }
+    </script>
+</body>
+</html>
