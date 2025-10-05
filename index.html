@@ -2,50 +2,815 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Visor de Tickets ProManager - Vista Limpia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket #14816 - Promanager</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333; background-color: #f7f7f7; }
-        .input-section { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }
-        h1 { color: #004d99; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 0; }
-        h2 { color: #555; margin-top: 25px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
-        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: monospace; }
-        button { background-color: #008cba; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background-color: #007bb5; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* Estilos para la SALIDA del ticket */
-        #ticket-output { margin-top: 30px; background-color: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
-        .ticket-header { background-color: #e6f7ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-        .descripcion { white-space: pre-wrap; background-color: #fff; border-left: 4px solid #004d99; padding: 10px; margin: 15px 0; }
-        ul { list-style: none; padding-left: 0; }
-        li { border-bottom: 1px dotted #eee; padding: 8px 0; }
-        li strong { color: #004d99; }
-        .error { color: red; font-weight: bold; }
-        
-        /* Estilos de Impresión: Oculta la sección de ingreso al imprimir */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+        }
+
+        .ticket-id {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-finalizado {
+            background: rgba(16, 185, 129, 0.2);
+            color: #059669;
+        }
+
+        .status-pendiente {
+            background: rgba(251, 191, 36, 0.2);
+            color: #d97706;
+        }
+
+        .status-proceso {
+            background: rgba(59, 130, 246, 0.2);
+            color: #2563eb;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .problem-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            border-radius: 8px;
+            line-height: 1.8;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+            padding-left: 1rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 0.375rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .note-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.25rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .note-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .note-author {
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .note-group {
+            font-size: 0.75rem;
+            background: #edf2f7;
+            padding: 0.25rem 0.625rem;
+            border-radius: 12px;
+            color: #4a5568;
+        }
+
+        .note-date {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+
+        .note-content {
+            color: #4a5568;
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+
+        .note-action {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            background: #edf2f7;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .action-finaliza { background: #d1fae5; color: #065f46; }
+        .action-deriva { background: #dbeafe; color: #1e40af; }
+        .action-programa { background: #fef3c7; color: #92400e; }
+        .action-contacto { background: #e0e7ff; color: #3730a3; }
+        .action-nota { background: #f3e8ff; color: #6b21a8; }
+
+        .attachment {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: #fef3c7;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #92400e;
+        }
+
+        .btn-print {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+
+        .btn-print:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
         @media print {
-            .input-section { display: none; } 
-            body { background-color: white !important; padding: 0; margin: 0; }
-            #ticket-output { box-shadow: none; border: none; padding: 0; }
-            .ticket-header, .descripcion, ul { border-color: #000 !important; }
-            h1, h2, h3, table, pre { page-break-inside: avoid; }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .btn-print {
+                display: none;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .timeline-item {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .header {
+                padding: 1.5rem;
+            }
+            .content {
+                padding: 1.5rem;
+            }
+            .header-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <div class="ticket-id">Ticket ID: <span id="ticketId"></span></div>
+            <div class="ticket-title" id="ticketTitle"></div>
+            <div class="header-meta" id="headerMeta"></div>
+        </div>
 
-    <div class="input-section">
-        <h1>Visor de Tickets ProManager 📄</h1>
-        <p>Esta herramienta es **segura y compartible** (alojada en GitHub). Siga los pasos para obtener el JSON y verlo limpio.</p>
-        
-        <label for="jsonInput">Pegue aquí el contenido JSON completo del ticket:</label>
-        <textarea id="jsonInput" placeholder='{"ticket_id": "...", "titulo": "...", "comentarios": [...]}'></textarea>
-        <button onclick="renderTicket()">Generar Vista Limpia</button>
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">📋 Problema Inicial</h2>
+                <div class="problem-box" id="problemContent"></div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">💬 Historial de Notas</h2>
+                <div class="timeline" id="notesTimeline"></div>
+            </div>
+        </div>
     </div>
 
-    <div id="ticket-output">
-        <p>Los detalles limpios del ticket aparecerán aquí después de ingresar el JSON. Estará listo para imprimir con **Ctrl + P**.</p>
-    </div>
+    <button class="btn-print" onclick="window.print()">Imprimir</button>
 
-    <script src="visor.js"></script>
-</body>
-</html>
+    <script>
+        // Pega aquí tu JSON completo
+        const ticketData = {
+  "data": [
+    {
+      "id": 117453,
+      "nota": "Se ha subido Orden de Trabajo",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 13:46:42",
+      "finished_at": "2025-02-03 13:46:42",
+      "expires_at": null,
+      "created_by": 568,
+      "finished_by": 568,
+      "sla": 0,
+      "sco_action_id": 6,
+      "ticket_id": 14816,
+      "grupo_agente_id": 6,
+      "stop_sla": 1,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 568,
+        "name": "Marco Berrios"
+      },
+      "grupoagente": {
+        "id": 6,
+        "nombre": "TECNICO",
+        "primario": 0,
+        "coordina": 0,
+        "finaliza": 0,
+        "visible": 0,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 6,
+        "action": "NOTA",
+        "estado": null,
+        "stop_sla": null,
+        "tipo": "NORMAL",
+        "visible": 1
+      },
+      "archivos": [
+        {
+          "id": 16911,
+          "ticket_detalle_id": 117453,
+          "nombre": "Archivo Adjunto",
+          "ruta": "public/escaneos/amTvDQTLPfFtguZ73XIHQKPJG8s4MYKrGWoJwarE.pdf",
+          "created_at": "2025-02-03 13:46:42",
+          "updated_at": "2025-02-03 13:46:42"
+        }
+      ]
+    },
+    {
+      "id": 117218,
+      "nota": "Se realiza visita a terreno verificando falla reportada en requerimiento.\r\nSe aplican cambios de version de Java, se aplica configuración de perfil junto con respectivos sistemas judiciales correspondientes.\r\nSe realizan pruebas con usuario.\r\nEquipo se encuentra operativo.",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 12:15:00",
+      "finished_at": "2025-02-03 13:20:17",
+      "expires_at": null,
+      "created_by": null,
+      "finished_by": 568,
+      "sla": 65,
+      "sco_action_id": 3,
+      "ticket_id": 14816,
+      "grupo_agente_id": 6,
+      "stop_sla": 0,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 568,
+        "name": "Marco Berrios"
+      },
+      "grupoagente": {
+        "id": 6,
+        "nombre": "TECNICO",
+        "primario": 0,
+        "coordina": 0,
+        "finaliza": 0,
+        "visible": 0,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 3,
+        "action": "FINALIZA",
+        "estado": "FINALIZADO",
+        "stop_sla": 1,
+        "tipo": "NORMAL",
+        "visible": 1
+      },
+      "archivos": []
+    },
+    {
+      "id": 117203,
+      "nota": "SE AGENDA REQUERIMIENTO",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 12:10:38",
+      "finished_at": "2025-02-03 12:15:10",
+      "expires_at": "2025-02-03 12:40:38",
+      "created_by": 576,
+      "finished_by": 575,
+      "sla": 0,
+      "sco_action_id": 2,
+      "ticket_id": 14816,
+      "grupo_agente_id": 3,
+      "stop_sla": 1,
+      "fecha_programacion": "2025-02-03 12:15:00",
+      "tipo_programacion": "VISITA TECNICA",
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 575,
+        "name": "Roberto Miranda"
+      },
+      "grupoagente": {
+        "id": 3,
+        "nombre": "RESIDENTES",
+        "primario": 0,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 2,
+        "action": "PROGRAMA",
+        "estado": "COORDINADO",
+        "stop_sla": 1,
+        "tipo": "PROGRAMA_A_FECHA",
+        "visible": 1
+      },
+      "archivos": []
+    },
+    {
+      "id": 117217,
+      "nota": "Reactivacion realizada por el sistema",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 12:15:10",
+      "finished_at": "2025-02-03 12:15:00",
+      "expires_at": "2025-02-03 12:15:00",
+      "created_by": 575,
+      "finished_by": null,
+      "sla": 0,
+      "sco_action_id": 7,
+      "ticket_id": 14816,
+      "grupo_agente_id": 3,
+      "stop_sla": 1,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "name": "Sistema"
+      },
+      "grupoagente": {
+        "id": 3,
+        "nombre": "RESIDENTES",
+        "primario": 0,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 7,
+        "action": "ACTIVACION SLA",
+        "estado": null,
+        "stop_sla": 0,
+        "tipo": "NORMAL",
+        "visible": 0
+      },
+      "archivos": []
+    },
+    {
+      "id": 117197,
+      "nota": "SE GESTIONA PARA RESIDENCIA",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 12:09:07",
+      "finished_at": "2025-02-03 12:10:38",
+      "expires_at": "2025-02-03 12:39:07",
+      "created_by": 576,
+      "finished_by": 576,
+      "sla": 1,
+      "sco_action_id": 1,
+      "ticket_id": 14816,
+      "grupo_agente_id": 1,
+      "stop_sla": 0,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 576,
+        "name": "Franco Fuentealba"
+      },
+      "grupoagente": {
+        "id": 1,
+        "nombre": "MDA",
+        "primario": 1,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 1,
+        "action": "DERIVA",
+        "estado": "PENDIENTE",
+        "stop_sla": 1,
+        "tipo": "DERIVA",
+        "visible": 1
+      },
+      "archivos": []
+    },
+    {
+      "id": 117196,
+      "nota": "SE REACTIVA REQUERIMIENTO DEBIDO A QUE GESTIÓN NO HA SIDO SOLUCIONADA",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 12:09:07",
+      "finished_at": "2025-02-03 12:09:07",
+      "expires_at": "2025-02-03 12:39:07",
+      "created_by": 576,
+      "finished_by": 576,
+      "sla": 0,
+      "sco_action_id": 1,
+      "ticket_id": 14816,
+      "grupo_agente_id": 1,
+      "stop_sla": 0,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 576,
+        "name": "Franco Fuentealba"
+      },
+      "grupoagente": {
+        "id": 1,
+        "nombre": "MDA",
+        "primario": 1,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 1,
+        "action": "DERIVA",
+        "estado": "PENDIENTE",
+        "stop_sla": 1,
+        "tipo": "DERIVA",
+        "visible": 1
+      },
+      "archivos": []
+    },
+    {
+      "id": 116541,
+      "nota": "ESTIMAD@ USUARI@, REQUERIMIENTO INGRESADO EN CATEGORIA NO CORRESPONDIENTE. ESTE DEBE SER INGRESADO POR NATURALEZA COMUNICACIONES, COMPONENTE CUENTAS - RED / CORREO, REQUERIMIENTO CAMBIO DE CONTRASEÑA.\r\n*UNA VEZ SOLUCIONADO EL NUEVO REQUERIMIENTO, OBJETAR ESTE, PARA SER DERIVADO A LA ATENCION PENDIENTE *",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 09:10:33",
+      "finished_at": "2025-02-03 09:12:52",
+      "expires_at": "2025-02-03 12:10:33",
+      "created_by": 690,
+      "finished_by": 690,
+      "sla": 0,
+      "sco_action_id": 3,
+      "ticket_id": 14816,
+      "grupo_agente_id": 1,
+      "stop_sla": 1,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 690,
+        "name": "José Ignacio Romero Quezada"
+      },
+      "grupoagente": {
+        "id": 1,
+        "nombre": "MDA",
+        "primario": 1,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 3,
+        "action": "FINALIZA",
+        "estado": "FINALIZADO",
+        "stop_sla": 1,
+        "tipo": "NORMAL",
+        "visible": 1
+      },
+      "archivos": []
+    },
+    {
+      "id": 116509,
+      "nota": "Se toma contacto con el usuario",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 09:01:08",
+      "finished_at": "2025-02-03 09:10:33",
+      "expires_at": "2025-02-03 09:31:08",
+      "created_by": 548,
+      "finished_by": 690,
+      "sla": 0,
+      "sco_action_id": 4,
+      "ticket_id": 14816,
+      "grupo_agente_id": 1,
+      "stop_sla": 1,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 690,
+        "name": "José Ignacio Romero Quezada"
+      },
+      "grupoagente": {
+        "id": 1,
+        "nombre": "MDA",
+        "primario": 1,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 4,
+        "action": "CONTACTO",
+        "estado": "EN PROCESO",
+        "stop_sla": 1,
+        "tipo": "NORMAL",
+        "visible": 1
+      },
+      "archivos": []
+    },
+    {
+      "id": 116508,
+      "nota": "SE SOLICITA ASISTENCIA DE TECNICO RESIDENTE EN OFICINA N° 826, PISO 8, TORRE E, PARA LA HABILITACION DE CUANTA DE AUTENTIFICACION, CORREO Y FIRMA ELECTRONICA EN GESTION PENAL DE JUEZ SUPLENTE DOÑA KATHERINE ROMAN DELFABBRO, JUEZ SUPLENTE DESDE 3 DE FEBRERO HASTA EL 03 DE ABRIL (SE ADJUNTA RESOLUCION NOMBRAMIENTO) ATTE MANUEL ARANCIBIA BRAVO INFORME DETALLADO DE REQUERIMIENTO JEFE UNIDAD DE SERVICIOS 14 JUAZGADO DE GARANTIA",
+      "archivo_adjunto": null,
+      "created_at": "2025-02-03 09:01:08",
+      "finished_at": "2025-02-03 09:01:08",
+      "expires_at": null,
+      "created_by": 548,
+      "finished_by": 548,
+      "sla": 0,
+      "sco_action_id": 1,
+      "ticket_id": 14816,
+      "grupo_agente_id": 1,
+      "stop_sla": 1,
+      "fecha_programacion": null,
+      "tipo_programacion": null,
+      "respuesta_email": 0,
+      "ticket_previo": 0,
+      "mail_from": null,
+      "mail_to": null,
+      "finalizado_por": {
+        "id": 548,
+        "name": "Jose Marrufo"
+      },
+      "grupoagente": {
+        "id": 1,
+        "nombre": "MDA",
+        "primario": 1,
+        "coordina": 1,
+        "finaliza": 1,
+        "visible": 1,
+        "no_change_color": 0
+      },
+      "scoaction": {
+        "id": 1,
+        "action": "DERIVA",
+        "estado": "PENDIENTE",
+        "stop_sla": 1,
+        "tipo": "DERIVA",
+        "visible": 1
+      },
+      "archivos": []
+    }
+  ],
+  "ticket": {
+    "id": 14816,
+    "estado": "FINALIZADO",
+    "fecha_creacion": "2025-02-03 09:01:08",
+    "medio_creacion_id": 1,
+    "problema": "SE SOLICITA ASISTENCIA DE TECNICO RESIDENTE EN OFICINA N° 826, PISO 8, TORRE E, PARA LA HABILITACION DE CUANTA DE AUTENTIFICACION, CORREO Y FIRMA ELECTRONICA EN GESTION PENAL DE JUEZ SUPLENTE DOÑA KATHERINE ROMAN DELFABBRO, JUEZ SUPLENTE DESDE 3 DE FEBRERO HASTA EL 03 DE ABRIL (SE ADJUNTA RESOLUCION NOMBRAMIENTO) ATTE MANUEL ARANCIBIA BRAVO INFORME DETALLADO DE REQUERIMIENTO JEFE UNIDAD DE SERVICIOS 14 JUAZGADO DE GARANTIA",
+    "numero_externo": "7467824",
+    "grupo_agente_id": 3,
+    "proyecto_id": 22,
+    "requerimiento": "2 HP - Prodesk 600G4",
+    "serie": "MXL935326B",
+    "tipo_falla": null,
+    "tecnico_id": 568,
+    "solicitud_id": 24817,
+    "correo_respuesta": null,
+    "comuna_id": null,
+    "user_response": 0,
+    "email_id": null,
+    "subject": null,
+    "grupo_finalizacion_id": 6,
+    "cliente_final_id": null,
+    "no_finalizar": 0,
+    "asunto": null
+  }
+};
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('es-CL', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getStatusClass(estado) {
+            if (estado === 'FINALIZADO') return 'status-finalizado';
+            if (estado === 'PENDIENTE') return 'status-pendiente';
+            return 'status-proceso';
+        }
+
+        function getActionClass(action) {
+            const actionLower = action.toLowerCase();
+            if (actionLower.includes('finaliza')) return 'action-finaliza';
+            if (actionLower.includes('deriva')) return 'action-deriva';
+            if (actionLower.includes('programa')) return 'action-programa';
+            if (actionLower.includes('contacto')) return 'action-contacto';
+            if (actionLower.includes('nota')) return 'action-nota';
+            return '';
+        }
+
+        function renderTicket() {
+            const ticket = ticketData.ticket;
+            const notes = ticketData.data;
+
+            // Header
+            document.getElementById('ticketId').textContent = ticket.id;
+            document.getElementById('ticketTitle').textContent = ticket.requerimiento || 'Sin título';
+
+            // Meta información
+            document.getElementById('headerMeta').innerHTML = `
+                <div class="meta-item">
+                    <span class="meta-label">Estado</span>
+                    <span class="status-badge ${getStatusClass(ticket.estado)}">${ticket.estado}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Fecha Creación</span>
+                    <span class="meta-value">${formatDate(ticket.fecha_creacion)}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Serie</span>
+                    <span class="meta-value">${ticket.serie || 'N/A'}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Ticket Externo</span>
+                    <span class="meta-value">#${ticket.numero_externo}</span>
+                </div>
+            `;
+
+            // Problema inicial
+            document.getElementById('problemContent').textContent = ticket.problema;
+
+            // Timeline de notas (ordenadas cronológicamente)
+            const sortedNotes = [...notes].sort((a, b) => 
+                new Date(a.created_at) - new Date(b.created_at)
+            );
+
+            let timelineHTML = '';
+            sortedNotes.forEach(note => {
+                const author = note.finalizado_por?.name || 'Sistema';
+                const group = note.grupoagente?.nombre || '';
+                const action = note.scoaction?.action || '';
+                const attachments = note.archivos || [];
+
+                timelineHTML += `
+                    <div class="
